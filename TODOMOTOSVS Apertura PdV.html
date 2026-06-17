@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TODOMOTOSVS — Gestión de Apertura de Puntos de Venta</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --taupe-50:  #F2EEE9;
+    --taupe-100: #E4DDD5;
+    --taupe-200: #CBBFB3;
+    --taupe-300: #B5A898;
+    --taupe-400: #9A8878;
+    --taupe-500: #7D6B58;
+    --taupe-600: #5F4F40;
+    --taupe-700: #453829;
+    --taupe-800: #2E2319;
+    --taupe-900: #1A1209;
+    --gold:      #A8895A;
+    --gold-light:#C9A96E;
+    --white:     #F9F5F1;
+    --ink:       #1C1510;
+    --danger:    #8B3A3A;
+    --success:   #3A6B4A;
+    --border:    #C5BAB0;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #EDE7DF;
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--taupe-800);
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gold-light);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    height: 100%;
+  }
+  .nav-tab {
+    background: none;
+    border: none;
+    color: var(--taupe-300);
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0 18px;
+    cursor: pointer;
+    transition: color 0.2s, border-bottom 0.2s;
+    border-bottom: 2px solid transparent;
+    height: 100%;
+  }
+  .nav-tab:hover { color: var(--taupe-100); }
+  .nav-tab.active {
+    color: var(--gold-light);
+    border-bottom: 2px solid var(--gold);
+  }
+  .nav-right {
+    font-size: 11px;
+    color: var(--taupe-400);
+    letter-spacing: 0.05em;
+  }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* HERO HEADER */
+  .page-header {
+    background: var(--taupe-800);
+    padding: 36px 40px 28px;
+    border-bottom: 1px solid var(--taupe-700);
+  }
+  .page-header-eyebrow {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .page-header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--taupe-50);
+    margin-bottom: 6px;
+    letter-spacing: 0.01em;
+  }
+  .page-header p {
+    font-size: 12px;
+    color: var(--taupe-400);
+    max-width: 640px;
+  }
+
+  /* MAIN CONTENT */
+  .content { padding: 32px 40px; max-width: 1160px; margin: 0 auto; }
+
+  /* CARDS */
+  .card {
+    background: #F6F1EB;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .card-header {
+    background: var(--taupe-100);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .card-number {
+    width: 28px; height: 28px;
+    background: var(--taupe-700);
+    color: var(--gold-light);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--taupe-700);
+    letter-spacing: 0.01em;
+  }
+  .card-subtitle {
+    font-size: 11px;
+    color: var(--taupe-500);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .card-body { padding: 24px; }
+
+  /* FORM ELEMENTS */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .form-grid-1 { display: grid; grid-template-columns: 1fr; gap: 16px; }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--taupe-600);
+  }
+  .field input,
+  .field select,
+  .field textarea {
+    background: #EDE7DF;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 9px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink);
+    transition: border-color 0.15s;
+    width: 100%;
+    outline: none;
+  }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    border-color: var(--taupe-500);
+    background: #fff;
+  }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .field input[type="number"] { font-variant-numeric: tabular-nums; }
+
+  /* RADIO GROUPS */
+  .radio-group { display: flex; gap: 12px; flex-wrap: wrap; }
+  .radio-option {
+    display: flex; align-items: center; gap: 7px;
+    cursor: pointer; font-size: 12px; color: var(--taupe-700);
+  }
+  .radio-option input[type="radio"] { accent-color: var(--taupe-600); }
+
+  /* DIVIDER */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+  }
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--taupe-500);
+    margin-bottom: 14px;
+  }
+
+  /* SCORE MATRIX */
+  .score-table { width: 100%; border-collapse: collapse; }
+  .score-table th {
+    background: var(--taupe-100);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--taupe-600);
+    padding: 10px 14px;
+    text-align: left;
+    border: 1px solid var(--border);
+  }
+  .score-table td {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+    font-size: 12px;
+  }
+  .score-table tr:nth-child(even) td { background: var(--taupe-50); }
+  .score-table td input[type="number"] {
+    width: 70px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 5px 8px;
+    font-size: 12px;
+    background: #fff;
+    text-align: center;
+  }
+  .score-table td select {
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 5px 8px;
+    font-size: 12px;
+    background: #fff;
+    min-width: 120px;
+  }
+
+  /* FINANCIALS TABLE */
+  .fin-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .fin-table th {
+    background: var(--taupe-700);
+    color: var(--taupe-100);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 10px 14px;
+    text-align: left;
+    border: 1px solid var(--taupe-600);
+  }
+  .fin-table th:last-child { text-align: right; }
+  .fin-table td {
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .fin-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+  .fin-table tr:nth-child(even) td { background: var(--taupe-50); }
+  .fin-table .total-row td {
+    background: var(--taupe-100);
+    font-weight: 600;
+    color: var(--taupe-800);
+    border-top: 2px solid var(--taupe-400);
+  }
+  .fin-table .grand-total td {
+    background: var(--taupe-700);
+    color: var(--gold-light);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    font-weight: 600;
+    border-top: 2px solid var(--gold);
+  }
+  .fin-table td input {
+    background: transparent;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink);
+    width: 100%;
+    outline: none;
+    padding: 0;
+  }
+  .fin-table td input:focus { background: rgba(255,255,255,0.7); border-radius: 2px; padding: 2px 4px; }
+  .fin-table td .amount-input {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    width: 130px;
+  }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 20px;
+    border-radius: 2px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    transition: background 0.15s, color 0.15s;
+  }
+  .btn-primary { background: var(--taupe-700); color: var(--gold-light); }
+  .btn-primary:hover { background: var(--taupe-800); }
+  .btn-secondary { background: var(--taupe-100); color: var(--taupe-700); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--taupe-200); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-approve { background: var(--success); color: #fff; }
+  .btn-approve:hover { background: #2e5639; }
+  .btn-sm { padding: 6px 14px; font-size: 10px; }
+  .btn-icon { padding: 7px 10px; }
+
+  .action-bar {
+    display: flex; gap: 10px; align-items: center;
+    padding: 20px 24px;
+    background: #EDE7DF;
+    border-top: 1px solid var(--border);
+  }
+  .action-bar .spacer { flex: 1; }
+
+  /* STATUS BADGES */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 2px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .badge-pending  { background: #DDD4C8; color: var(--taupe-600); }
+  .badge-approved { background: #D6EAD9; color: var(--success); }
+  .badge-rejected { background: #F5DADA; color: var(--danger); }
+  .badge-review   { background: #EDE3C8; color: #7A5C1A; }
+
+  /* SUMMARY BOX */
+  .summary-box {
+    background: var(--taupe-800);
+    border-radius: 3px;
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  .summary-item { }
+  .summary-item .s-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--taupe-400);
+    margin-bottom: 5px;
+  }
+  .summary-item .s-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--gold-light);
+  }
+  .summary-item .s-sub {
+    font-size: 10px;
+    color: var(--taupe-500);
+    margin-top: 2px;
+  }
+
+  /* IMAGE UPLOAD */
+  .img-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px; }
+  .img-slot {
+    aspect-ratio: 4/3;
+    border: 1.5px dashed var(--taupe-300);
+    border-radius: 3px;
+    background: #EDE7DF;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+    overflow: hidden;
+    font-size: 11px;
+    color: var(--taupe-400);
+    text-align: center;
+    gap: 6px;
+  }
+  .img-slot:hover { border-color: var(--taupe-500); background: var(--taupe-100); }
+  .img-slot input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .img-slot img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  }
+  .img-slot .img-label {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(58,48,40,0.85);
+    color: var(--taupe-200);
+    font-size: 10px;
+    padding: 4px 8px;
+    text-align: center;
+  }
+  .img-slot .remove-img {
+    position: absolute; top: 5px; right: 5px;
+    background: rgba(139,58,58,0.9);
+    color: #fff;
+    border: none;
+    border-radius: 2px;
+    width: 20px; height: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 5;
+  }
+  .img-slot:hover .remove-img { display: flex; }
+  .upload-icon {
+    font-size: 22px;
+    color: var(--taupe-300);
+  }
+
+  /* PRINT AREA */
+  .approval-status-bar {
+    background: var(--taupe-100);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .status-info { display: flex; flex-direction: column; gap: 3px; }
+  .status-info .s-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--taupe-500); }
+  .status-info .s-val { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 500; color: var(--taupe-800); }
+
+  /* TABS within card */
+  .inner-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .inner-tab {
+    padding: 10px 18px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--taupe-500);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    background: none;
+    border-left: none; border-right: none; border-top: none;
+    transition: color 0.15s;
+  }
+  .inner-tab:hover { color: var(--taupe-700); }
+  .inner-tab.active { color: var(--taupe-700); border-bottom: 2px solid var(--taupe-600); }
+  .inner-pane { display: none; }
+  .inner-pane.active { display: block; }
+
+  /* Proyeccion tabla */
+  .proj-months { display: grid; grid-template-columns: repeat(6,1fr); gap: 10px; }
+  .proj-month { background: var(--taupe-50); border: 1px solid var(--border); border-radius: 2px; padding: 12px; }
+  .proj-month .pm-label { font-size: 10px; font-weight: 600; color: var(--taupe-500); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  .proj-month input { width: 100%; border: 1px solid var(--border); background: #fff; border-radius: 2px; padding: 6px 8px; font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; font-family: 'Inter', sans-serif; color: var(--ink); outline: none; }
+  .proj-month input:focus { border-color: var(--taupe-500); }
+  .proj-total { background: var(--taupe-700); color: var(--gold-light); border: 1px solid var(--taupe-600); border-radius: 2px; padding: 12px; }
+  .proj-total .pm-label { color: var(--taupe-400); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  .proj-total .proj-val { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 500; }
+
+  /* Nota */
+  .nota {
+    background: #DDD4C8;
+    border-left: 3px solid var(--gold);
+    padding: 12px 16px;
+    font-size: 11.5px;
+    color: var(--taupe-700);
+    border-radius: 0 2px 2px 0;
+    margin-bottom: 16px;
+  }
+
+  @media print {
+    nav, .action-bar, .btn, .img-slot input { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">TODOMOTOSVS</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('evaluacion')">Formato de Evaluacion</button>
+    <button class="nav-tab" onclick="switchView('plantilla')">Plantilla de Inversion</button>
+  </div>
+  <div class="nav-right">Gestion de Apertura · 2026</div>
+</nav>
+
+<!-- ================================================================ -->
+<!-- VIEW 1: FORMATO DE EVALUACION -->
+<!-- ================================================================ -->
+<div class="view active" id="view-evaluacion">
+
+  <div class="page-header">
+    <div class="page-header-eyebrow">Formato de Evaluacion — Gerencia General</div>
+    <h1>Analisis de Apertura de Punto de Venta</h1>
+    <p>Este documento consolida los cinco criterios de analisis requeridos por Gerencia General para la aprobacion de nuevos puntos de venta en la region Caribe. Cada campo debe ser diligenciado con precision y sustentacion por el area responsable de la propuesta.</p>
+  </div>
+
+  <div class="content">
+
+    <!-- META INFO -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title" style="margin-left:0">Identificacion del Proyecto</div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid-3" style="margin-bottom:16px">
+          <div class="field">
+            <label>Departamento</label>
+            <select>
+              <option value="">Seleccionar</option>
+              <option>Atlantico</option>
+              <option>Bolivar</option>
+              <option>Cesar</option>
+              <option>La Guajira</option>
+              <option>Magdalena</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Ciudad / Municipio</label>
+            <input type="text" placeholder="Ej. Barranquilla">
+          </div>
+          <div class="field">
+            <label>Nombre propuesto del PdV</label>
+            <input type="text" placeholder="Ej. TODOMOTOSVS Barranquilla Norte">
+          </div>
+        </div>
+        <div class="form-grid-3">
+          <div class="field">
+            <label>Fecha de elaboracion</label>
+            <input type="date">
+          </div>
+          <div class="field">
+            <label>Elaborado por</label>
+            <input type="text" placeholder="Nombre del responsable">
+          </div>
+          <div class="field">
+            <label>Area responsable</label>
+            <input type="text" placeholder="Ej. Expansion Comercial">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1. OPORTUNIDAD DE MERCADO -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number">1</div>
+        <div>
+          <div class="card-title">Oportunidad del Mercado</div>
+          <div class="card-subtitle">Analisis de demanda, competencia y viabilidad comercial</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="nota">Este bloque debe sustentarse con datos estadisticos verificables: cifras de movilidad, parque automotor, densidad de competidores y tendencias del sector en la zona proyectada.</div>
+
+        <div class="section-label">Contexto del Mercado</div>
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="field">
+            <label>Poblacion total del area de influencia</label>
+            <input type="text" placeholder="Ej. 350.000 habitantes">
+          </div>
+          <div class="field">
+            <label>Parque automotor estimado (motos)</label>
+            <input type="text" placeholder="Ej. 42.000 unidades registradas">
+          </div>
+          <div class="field">
+            <label>Estrato socioeconomico predominante</label>
+            <select>
+              <option value="">Seleccionar</option>
+              <option>Estrato 1 - 2</option>
+              <option>Estrato 2 - 3</option>
+              <option>Estrato 3 - 4</option>
+              <option>Estrato 4 - 5</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Segmento objetivo principal</label>
+            <select>
+              <option value="">Seleccionar</option>
+              <option>Domiciliarios / Delivery</option>
+              <option>Transporte informal</option>
+              <option>Uso recreativo</option>
+              <option>Mixto</option>
+            </select>
+          </div>
+        </div>
+
+        <hr class="divider">
+        <div class="section-label">Analisis de Competencia</div>
+        <table class="score-table" style="margin-bottom:16px">
+          <thead>
+            <tr>
+              <th>Competidor</th>
+              <th>Ubicacion</th>
+              <th>Productos principales</th>
+              <th>Fortaleza percibida</th>
+              <th>Debilidad detectada</th>
+            </tr>
+          </thead>
+          <tbody id="comp-table-body">
+            <tr>
+              <td><input type="text" style="width:100%;border:none;background:transparent;font-size:12px;outline:none" placeholder="Nombre del competidor"></td>
+              <td><input type="text" style="width:100%;border:none;background:transparent;font-size:12px;outline:none" placeholder="Barrio / Sector"></td>
+              <td><input type="text" style="width:100%;border:none;background:transparent;font-size:12px;outline:none" placeholder="Repuestos, accesorios..."></td>
+              <td><select style="border:none;background:transparent;font-size:12px;outline:none"><option>Alta</option><option>Media</option><option>Baja</option></select></td>
+              <td><input type="text" style="width:100%;border:none;background:transparent;font-size:12px;outline:none" placeholder=""></td>
+            </tr>
+            <tr>
+              <td><input type="text" style="width:100%;border:none;background:transparent;font-size:12px;outline:none" placeholder="Nombre del competidor"></td>
+              <td><input type="text" style="width:100%;border:none;background:transparent;font-size:12px;outline:none" placeholder="Barrio / Sector"></td>
+              <td><input type="text" style="width:100%;border:none;background:transparent;font-size:12px;outline:none" placeholder="Repuestos, accesorios..."></td>
+              <td><select style="border:none;background:transparent;font-size:12px;outline:none"><option>Alta</option><option>Media</option><option>Baja</option></select></td>
+              <td><input type="text" style="width:100%;border:none;background:transparent;font-size:12px;outline:none" placeholder=""></td>
+            </tr>
+            <tr>
+              <td><input type="text" style="width:100%;border:none;background:transparent;font-size:12px;outline:none" placeholder="Nombre del competidor"></td>
+              <td><input type="text" style="width:100%;border:none;background:transparent;font-size:12px;outline:none" placeholder="Barrio / Sector"></td>
+              <td><input type="text" style="width:100%;border:none;background:transparent;font-size:12px;outline:none" placeholder="Repuestos, accesorios..."></td>
+              <td><select style="border:none;background:transparent;font-size:12px;outline:none"><option>Alta</option><option>Media</option><option>Baja</option></select></td>
+              <td><input type="text" style="width:100%;border:none;background:transparent;font-size:12px;outline:none" placeholder=""></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <hr class="divider">
+        <div class="section-label">Ventaja Diferencial y Justificacion Estrategica</div>
+        <div class="field" style="margin-bottom:14px">
+          <label>Propuesta de valor de TODOMOTOSVS en esta zona</label>
+          <textarea placeholder="Describa los factores diferenciadores: portafolio, marca, atencion, precio, servicio postventa, alianzas locales, etc."></textarea>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Calificacion de la oportunidad de mercado (1 - 10)</label>
+            <input type="number" min="1" max="10" placeholder="0">
+          </div>
+          <div class="field">
+            <label>Riesgo de mercado percibido</label>
+            <select>
+              <option value="">Seleccionar</option>
+              <option>Bajo</option>
+              <option>Medio</option>
+              <option>Alto</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- IMAGES -->
+        <hr class="divider">
+        <div class="section-label">Soporte Fotografico y Documental — Mercado</div>
+        <div class="img-grid" id="img-mercado">
+          <div class="img-slot" onclick="triggerImg(this)">
+            <input type="file" accept="image/*" onchange="loadImg(event,this)">
+            <span class="upload-icon">+</span>
+            <span>Mapa de zona de influencia</span>
+          </div>
+          <div class="img-slot" onclick="triggerImg(this)">
+            <input type="file" accept="image/*" onchange="loadImg(event,this)">
+            <span class="upload-icon">+</span>
+            <span>Evidencia de competidores</span>
+          </div>
+          <div class="img-slot" onclick="triggerImg(this)">
+            <input type="file" accept="image/*" onchange="loadImg(event,this)">
+            <span class="upload-icon">+</span>
+            <span>Estadistica de movilidad</span>
+          </div>
+          <div class="img-slot" onclick="triggerImg(this)">
+            <input type="file" accept="image/*" onchange="loadImg(event,this)">
+            <span class="upload-icon">+</span>
+            <span>Otro soporte</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. LOCAL COMERCIAL -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number">2</div>
+        <div>
+          <div class="card-title">Oportunidad del Local Comercial</div>
+          <div class="card-subtitle">Especificaciones fisicas, juridicas y condiciones de arrendamiento</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="section-label">Ubicacion y Caracteristicas Fisicas</div>
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="field">
+            <label>Direccion exacta</label>
+            <input type="text" placeholder="Calle, Carrera, Barrio">
+          </div>
+          <div class="field">
+            <label>Tipo de via</label>
+            <select>
+              <option value="">Seleccionar</option>
+              <option>Via principal de alto flujo</option>
+              <option>Via secundaria comercial</option>
+              <option>Centro comercial</option>
+              <option>Zona industrial</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Area total (m²)</label>
+            <input type="number" placeholder="0">
+          </div>
+          <div class="field">
+            <label>Area de sala de exhibicion (m²)</label>
+            <input type="number" placeholder="0">
+          </div>
+          <div class="field">
+            <label>Area de bodega (m²)</label>
+            <input type="number" placeholder="0">
+          </div>
+          <div class="field">
+            <label>Area administrativa / caja (m²)</label>
+            <input type="number" placeholder="0">
+          </div>
+        </div>
+
+        <hr class="divider">
+        <div class="section-label">Condiciones del Local</div>
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="field">
+            <label>Estado actual del local</label>
+            <select>
+              <option value="">Seleccionar</option>
+              <option>Listo para operar</option>
+              <option>Requiere adecuaciones menores</option>
+              <option>Requiere obra mayor</option>
+              <option>En construccion</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Disponibilidad de parqueadero</label>
+            <div class="radio-group" style="margin-top:8px">
+              <label class="radio-option"><input type="radio" name="park" value="si"> Si</label>
+              <label class="radio-option"><input type="radio" name="park" value="no"> No</label>
+              <label class="radio-option"><input type="radio" name="park" value="parcial"> Parcial</label>
+            </div>
+          </div>
+          <div class="field">
+            <label>Visibilidad desde la via</label>
+            <select>
+              <option value="">Seleccionar</option>
+              <option>Excelente — fachada en esquina</option>
+              <option>Buena — frente amplio</option>
+              <option>Regular — frente angosto</option>
+              <option>Limitada — interior de cuadra</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Acceso para motos (rampa / nivel)</label>
+            <div class="radio-group" style="margin-top:8px">
+              <label class="radio-option"><input type="radio" name="rampa" value="si"> Si</label>
+              <label class="radio-option"><input type="radio" name="rampa" value="no"> No</label>
+              <label class="radio-option"><input type="radio" name="rampa" value="adapt"> Adaptable</label>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+        <div class="section-label">Condiciones Contractuales y Economicas</div>
+        <div class="form-grid-3" style="margin-bottom:16px">
+          <div class="field">
+            <label>Canon mensual de arrendamiento ($)</label>
+            <input type="number" placeholder="0">
+          </div>
+          <div class="field">
+            <label>Deposito / Garantia ($)</label>
+            <input type="number" placeholder="0">
+          </div>
+          <div class="field">
+            <label>Duracion del contrato</label>
+            <input type="text" placeholder="Ej. 12 meses prorrogable">
+          </div>
+          <div class="field">
+            <label>Incluye servicios publicos</label>
+            <div class="radio-group" style="margin-top:8px">
+              <label class="radio-option"><input type="radio" name="svc" value="si"> Si</label>
+              <label class="radio-option"><input type="radio" name="svc" value="no"> No</label>
+              <label class="radio-option"><input type="radio" name="svc" value="parcial"> Parcial</label>
+            </div>
+          </div>
+          <div class="field">
+            <label>Nombre / Contacto del arrendador</label>
+            <input type="text" placeholder="">
+          </div>
+          <div class="field">
+            <label>Calificacion del local (1 - 10)</label>
+            <input type="number" min="1" max="10" placeholder="0">
+          </div>
+        </div>
+        <div class="field">
+          <label>Observaciones adicionales sobre el local</label>
+          <textarea placeholder="Restricciones, clausulas especiales, obras de cargo del arrendador, historial del inmueble, etc."></textarea>
+        </div>
+
+        <!-- IMAGES -->
+        <hr class="divider">
+        <div class="section-label">Soporte Fotografico — Local Comercial</div>
+        <div class="img-grid">
+          <div class="img-slot" onclick="triggerImg(this)">
+            <input type="file" accept="image/*" onchange="loadImg(event,this)">
+            <span class="upload-icon">+</span>
+            <span>Fachada exterior</span>
+          </div>
+          <div class="img-slot" onclick="triggerImg(this)">
+            <input type="file" accept="image/*" onchange="loadImg(event,this)">
+            <span class="upload-icon">+</span>
+            <span>Interior — sala principal</span>
+          </div>
+          <div class="img-slot" onclick="triggerImg(this)">
+            <input type="file" accept="image/*" onchange="loadImg(event,this)">
+            <span class="upload-icon">+</span>
+            <span>Bodega / Deposito</span>
+          </div>
+          <div class="img-slot" onclick="triggerImg(this)">
+            <input type="file" accept="image/*" onchange="loadImg(event,this)">
+            <span class="upload-icon">+</span>
+            <span>Acceso vehicular</span>
+          </div>
+          <div class="img-slot" onclick="triggerImg(this)">
+            <input type="file" accept="image/*" onchange="loadImg(event,this)">
+            <span class="upload-icon">+</span>
+            <span>Vista desde la via</span>
+          </div>
+          <div class="img-slot" onclick="triggerImg(this)">
+            <input type="file" accept="image/*" onchange="loadImg(event,this)">
+            <span class="upload-icon">+</span>
+            <span>Plano o croquis</span>
+          </div>
+          <div class="img-slot" onclick="triggerImg(this)">
+            <input type="file" accept="image/*" onchange="loadImg(event,this)">
+            <span class="upload-icon">+</span>
+            <span>Contrato / Propuesta</span>
+          </div>
+          <div class="img-slot" onclick="triggerImg(this)">
+            <input type="file" accept="image/*" onchange="loadImg(event,this)">
+            <span class="upload-icon">+</span>
+            <span>Otro soporte</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. PROYECCION DE VENTAS -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number">3</div>
+        <div>
+          <div class="card-title">Proyeccion de Ventas</div>
+          <div class="card-subtitle">Estimacion de ingresos para los primeros 6 meses de operacion</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="nota">Las proyecciones deben fundamentarse en el ticket promedio de otros puntos de venta de la red, la capacidad instalada del local y la demanda estimada del mercado. Se exige una proyeccion conservadora y una optimista.</div>
+
+        <div class="inner-tabs">
+          <button class="inner-tab active" onclick="switchInner(event,'proy-conservadora')">Escenario Conservador</button>
+          <button class="inner-tab" onclick="switchInner(event,'proy-optimista')">Escenario Optimista</button>
+        </div>
+
+        <div class="inner-pane active" id="proy-conservadora">
+          <div class="section-label" style="margin-bottom:12px">Ventas Brutas Proyectadas ($) — Escenario Conservador</div>
+          <div class="proj-months">
+            <div class="proj-month"><div class="pm-label">Mes 1</div><input type="number" placeholder="0" oninput="calcProy('c')"></div>
+            <div class="proj-month"><div class="pm-label">Mes 2</div><input type="number" placeholder="0" oninput="calcProy('c')"></div>
+            <div class="proj-month"><div class="pm-label">Mes 3</div><input type="number" placeholder="0" oninput="calcProy('c')"></div>
+            <div class="proj-month"><div class="pm-label">Mes 4</div><input type="number" placeholder="0" oninput="calcProy('c')"></div>
+            <div class="proj-month"><div class="pm-label">Mes 5</div><input type="number" placeholder="0" oninput="calcProy('c')"></div>
+            <div class="proj-month"><div class="pm-label">Mes 6</div><input type="number" placeholder="0" oninput="calcProy('c')"></div>
+            <div class="proj-total"><div class="pm-label">Total 6 Meses</div><div class="proj-val" id="proy-c-total">$ 0</div></div>
+          </div>
+          <div class="form-grid-3" style="margin-top:16px">
+            <div class="field">
+              <label>Ticket promedio estimado ($)</label>
+              <input type="number" placeholder="0">
+            </div>
+            <div class="field">
+              <label>Transacciones mensuales esperadas</label>
+              <input type="number" placeholder="0">
+            </div>
+            <div class="field">
+              <label>Margen bruto estimado (%)</label>
+              <input type="number" placeholder="0" min="0" max="100">
+            </div>
+          </div>
+        </div>
+
+        <div class="inner-pane" id="proy-optimista">
+          <div class="section-label" style="margin-bottom:12px">Ventas Brutas Proyectadas ($) — Escenario Optimista</div>
+          <div class="proj-months">
+            <div class="proj-month"><div class="pm-label">Mes 1</div><input type="number" placeholder="0" oninput="calcProy('o')"></div>
+            <div class="proj-month"><div class="pm-label">Mes 2</div><input type="number" placeholder="0" oninput="calcProy('o')"></div>
+            <div class="proj-month"><div class="pm-label">Mes 3</div><input type="number" placeholder="0" oninput="calcProy('o')"></div>
+            <div class="proj-month"><div class="pm-label">Mes 4</div><input type="number" placeholder="0" oninput="calcProy('o')"></div>
+            <div class="proj-month"><div class="pm-label">Mes 5</div><input type="number" placeholder="0" oninput="calcProy('o')"></div>
+            <div class="proj-month"><div class="pm-label">Mes 6</div><input type="number" placeholder="0" oninput="calcProy('o')"></div>
+            <div class="proj-total"><div class="pm-label">Total 6 Meses</div><div class="proj-val" id="proy-o-total">$ 0</div></div>
+          </div>
+          <div class="form-grid-3" style="margin-top:16px">
+            <div class="field">
+              <label>Ticket promedio estimado ($)</label>
+              <input type="number" placeholder="0">
+            </div>
+            <div class="field">
+              <label>Transacciones mensuales esperadas</label>
+              <input type="number" placeholder="0">
+            </div>
+            <div class="field">
+              <label>Margen bruto estimado (%)</label>
+              <input type="number" placeholder="0" min="0" max="100">
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+        <div class="field">
+          <label>Supuestos y metodologia utilizada para las proyecciones</label>
+          <textarea placeholder="Describa la base del calculo: benchmark con otros PdV, estudio de mercado, capacidad operativa, estacionalidad, etc."></textarea>
+        </div>
+        <div class="form-grid" style="margin-top:14px">
+          <div class="field">
+            <label>Punto de equilibrio estimado (mes)</label>
+            <input type="number" placeholder="Ej. 3">
+          </div>
+          <div class="field">
+            <label>Periodo de recuperacion de la inversion (meses)</label>
+            <input type="number" placeholder="Ej. 8">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. ESTRUCTURA OPERATIVA -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number">4</div>
+        <div>
+          <div class="card-title">Estructura Operativa</div>
+          <div class="card-subtitle">Talento humano, roles y definicion de servicio postventa</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="section-label">Dotacion de Personal Requerida</div>
+        <table class="score-table" style="margin-bottom:20px">
+          <thead>
+            <tr>
+              <th>Cargo</th>
+              <th>Cantidad</th>
+              <th>Tipo de contrato</th>
+              <th>Salario base ($)</th>
+              <th>Aplica comision</th>
+              <th>Costo mensual total ($)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Lider de Punto de Venta</td>
+              <td><input type="number" value="1" min="0" style="width:60px;border:1px solid var(--border);border-radius:2px;padding:4px 8px;font-size:12px;text-align:center"></td>
+              <td><select style="font-size:12px;border:1px solid var(--border);border-radius:2px;padding:4px 8px"><option>Indefinido</option><option>Fijo</option><option>Obra labor</option></select></td>
+              <td><input type="number" placeholder="0" style="width:110px;border:1px solid var(--border);border-radius:2px;padding:4px 8px;font-size:12px;text-align:right;font-variant-numeric:tabular-nums"></td>
+              <td><select style="font-size:12px;border:1px solid var(--border);border-radius:2px;padding:4px 8px"><option>Si</option><option>No</option></select></td>
+              <td><input type="number" placeholder="0" style="width:120px;border:1px solid var(--border);border-radius:2px;padding:4px 8px;font-size:12px;text-align:right;font-variant-numeric:tabular-nums"></td>
+            </tr>
+            <tr>
+              <td>Asesor Comercial</td>
+              <td><input type="number" value="2" min="0" style="width:60px;border:1px solid var(--border);border-radius:2px;padding:4px 8px;font-size:12px;text-align:center"></td>
+              <td><select style="font-size:12px;border:1px solid var(--border);border-radius:2px;padding:4px 8px"><option>Indefinido</option><option>Fijo</option><option>Obra labor</option></select></td>
+              <td><input type="number" placeholder="0" style="width:110px;border:1px solid var(--border);border-radius:2px;padding:4px 8px;font-size:12px;text-align:right;font-variant-numeric:tabular-nums"></td>
+              <td><select style="font-size:12px;border:1px solid var(--border);border-radius:2px;padding:4px 8px"><option>Si</option><option>No</option></select></td>
+              <td><input type="number" placeholder="0" style="width:120px;border:1px solid var(--border);border-radius:2px;padding:4px 8px;font-size:12px;text-align:right;font-variant-numeric:tabular-nums"></td>
+            </tr>
+            <tr>
+              <td>Cajero / Auxiliar Administrativo</td>
+              <td><input type="number" value="1" min="0" style="width:60px;border:1px solid var(--border);border-radius:2px;padding:4px 8px;font-size:12px;text-align:center"></td>
+              <td><select style="font-size:12px;border:1px solid var(--border);border-radius:2px;padding:4px 8px"><option>Indefinido</option><option>Fijo</option><option>Obra labor</option></select></td>
+              <td><input type="number" placeholder="0" style="width:110px;border:1px solid var(--border);border-radius:2px;padding:4px 8px;font-size:12px;text-align:right;font-variant-numeric:tabular-nums"></td>
+              <td><select style="font-size:12px;border:1px solid var(--border);border-radius:2px;padding:4px 8px"><option>No</option><option>Si</option></select></td>
+              <td><input type="number" placeholder="0" style="width:120px;border:1px solid var(--border);border-radius:2px;padding:4px 8px;font-size:12px;text-align:right;font-variant-numeric:tabular-nums"></td>
+            </tr>
+            <tr>
+              <td>Tecnico Postventa</td>
+              <td><input type="number" value="0" min="0" style="width:60px;border:1px solid var(--border);border-radius:2px;padding:4px 8px;font-size:12px;text-align:center"></td>
+              <td><select style="font-size:12px;border:1px solid var(--border);border-radius:2px;padding:4px 8px"><option>N/A</option><option>Indefinido</option><option>Fijo</option></select></td>
+              <td><input type="number" placeholder="0" style="width:110px;border:1px solid var(--border);border-radius:2px;padding:4px 8px;font-size:12px;text-align:right;font-variant-numeric:tabular-nums"></td>
+              <td><select style="font-size:12px;border:1px solid var(--border);border-radius:2px;padding:4px 8px"><option>No</option><option>Si</option></select></td>
+              <td><input type="number" placeholder="0" style="width:120px;border:1px solid var(--border);border-radius:2px;padding:4px 8px;font-size:12px;text-align:right;font-variant-numeric:tabular-nums"></td>
+            </tr>
+            <tr>
+              <td>Vigilante / Seguridad</td>
+              <td><input type="number" value="0" min="0" style="width:60px;border:1px solid var(--border);border-radius:2px;padding:4px 8px;font-size:12px;text-align:center"></td>
+              <td><select style="font-size:12px;border:1px solid var(--border);border-radius:2px;padding:4px 8px"><option>N/A</option><option>Indefinido</option><option>Outsourcing</option></select></td>
+              <td><input type="number" placeholder="0" style="width:110px;border:1px solid var(--border);border-radius:2px;padding:4px 8px;font-size:12px;text-align:right;font-variant-numeric:tabular-nums"></td>
+              <td><select style="font-size:12px;border:1px solid var(--border);border-radius:2px;padding:4px 8px"><option>No</option></select></td>
+              <td><input type="number" placeholder="0" style="width:120px;border:1px solid var(--border);border-radius:2px;padding:4px 8px;font-size:12px;text-align:right;font-variant-numeric:tabular-nums"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <hr class="divider">
+        <div class="section-label">Servicio Postventa</div>
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="field">
+            <label>Aplica postventa en este PdV</label>
+            <div class="radio-group" style="margin-top:8px">
+              <label class="radio-option"><input type="radio" name="posv" value="si"> Si</label>
+              <label class="radio-option"><input type="radio" name="posv" value="no"> No</label>
+              <label class="radio-option"><input type="radio" name="posv" value="futuro"> A futuro (mes 3+)</label>
+            </div>
+          </div>
+          <div class="field">
+            <label>Modalidad de postventa</label>
+            <select>
+              <option value="">Seleccionar</option>
+              <option>Taller propio en el local</option>
+              <option>Alianza con taller externo</option>
+              <option>Centro de servicio autorizado cercano</option>
+              <option>No aplica</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Justificacion de la estructura operativa propuesta</label>
+          <textarea placeholder="Explique por que esta dotacion es adecuada para el volumen proyectado, las caracteristicas del mercado y la etapa de apertura del punto de venta."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. COSTO TOTAL DE INVERSION -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number">5</div>
+        <div>
+          <div class="card-title">Costo Total de Inversion</div>
+          <div class="card-subtitle">Resumen financiero consolidado para aprobacion de Gerencia General</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="nota">Los valores aqui consignados son estimaciones previas a la aprobacion. Una vez aprobado el proyecto, los montos definitivos se registran en la Plantilla de Inversion detallada.</div>
+
+        <table class="fin-table" style="margin-bottom:4px">
+          <thead>
+            <tr>
+              <th style="width:40%">Concepto de Inversion</th>
+              <th>Descripcion</th>
+              <th style="width:150px">Valor Estimado ($)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Arreglos locativos / Obra civil</td>
+              <td><input type="text" placeholder="Descripcion breve"></td>
+              <td><input type="number" class="amount-input" placeholder="0" oninput="calcInversion()"></td>
+            </tr>
+            <tr>
+              <td>Imagen del PdV (rotulacion, señaletica, pintura)</td>
+              <td><input type="text" placeholder="Descripcion breve"></td>
+              <td><input type="number" class="amount-input" placeholder="0" oninput="calcInversion()"></td>
+            </tr>
+            <tr>
+              <td>Mobiliario y exhibidores</td>
+              <td><input type="text" placeholder="Descripcion breve"></td>
+              <td><input type="number" class="amount-input" placeholder="0" oninput="calcInversion()"></td>
+            </tr>
+            <tr>
+              <td>Equipos tecnologicos (POS, computadores, camaras)</td>
+              <td><input type="text" placeholder="Descripcion breve"></td>
+              <td><input type="number" class="amount-input" placeholder="0" oninput="calcInversion()"></td>
+            </tr>
+            <tr>
+              <td>Nomina primer mes (carga total)</td>
+              <td><input type="text" placeholder="Descripcion breve"></td>
+              <td><input type="number" class="amount-input" placeholder="0" oninput="calcInversion()"></td>
+            </tr>
+            <tr>
+              <td>Inventario inicial</td>
+              <td><input type="text" placeholder="Descripcion breve"></td>
+              <td><input type="number" class="amount-input" placeholder="0" oninput="calcInversion()"></td>
+            </tr>
+            <tr>
+              <td>Deposito / Garantia arrendamiento</td>
+              <td><input type="text" placeholder="Descripcion breve"></td>
+              <td><input type="number" class="amount-input" placeholder="0" oninput="calcInversion()"></td>
+            </tr>
+            <tr>
+              <td>Gastos de constitucion / Tramites legales</td>
+              <td><input type="text" placeholder="Descripcion breve"></td>
+              <td><input type="number" class="amount-input" placeholder="0" oninput="calcInversion()"></td>
+            </tr>
+            <tr>
+              <td>Marketing de apertura</td>
+              <td><input type="text" placeholder="Descripcion breve"></td>
+              <td><input type="number" class="amount-input" placeholder="0" oninput="calcInversion()"></td>
+            </tr>
+            <tr>
+              <td>Imprevistos y contingencias (5-10%)</td>
+              <td><input type="text" placeholder="Descripcion breve"></td>
+              <td><input type="number" class="amount-input" placeholder="0" oninput="calcInversion()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" placeholder="Otro concepto"></td>
+              <td><input type="text" placeholder="Descripcion breve"></td>
+              <td><input type="number" class="amount-input" placeholder="0" oninput="calcInversion()"></td>
+            </tr>
+            <tr class="grand-total">
+              <td colspan="2">TOTAL ESTIMADO DE INVERSION</td>
+              <td id="total-inversion">$ 0</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <hr class="divider">
+        <div class="field">
+          <label>Observaciones financieras y condiciones especiales</label>
+          <textarea placeholder="Fuente de financiacion, fases de desembolso, condiciones de retorno, politica de aprovisionamiento de inventario, etc."></textarea>
+        </div>
+
+        <hr class="divider">
+        <div class="section-label">Concepto del Analista Responsable</div>
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="field">
+            <label>Recomendacion general</label>
+            <select>
+              <option value="">Seleccionar</option>
+              <option>Apertura viable — recomendar aprobacion</option>
+              <option>Viable con condiciones — revision requerida</option>
+              <option>No viable en las condiciones actuales</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Nivel de riesgo global del proyecto</label>
+            <select>
+              <option value="">Seleccionar</option>
+              <option>Bajo</option>
+              <option>Medio</option>
+              <option>Alto</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Justificacion y observaciones finales del analista</label>
+          <textarea style="min-height:100px" placeholder="Argumente la recomendacion emitida. Incluya factores criticos de exito, riesgos identificados y condicionantes para la aprobacion."></textarea>
+        </div>
+
+        <div class="form-grid-3" style="margin-top:20px">
+          <div class="field">
+            <label>Firma / Nombre del analista</label>
+            <input type="text" placeholder="">
+          </div>
+          <div class="field">
+            <label>Cargo</label>
+            <input type="text" placeholder="">
+          </div>
+          <div class="field">
+            <label>Fecha de presentacion</label>
+            <input type="date">
+          </div>
+        </div>
+      </div>
+
+      <div class="action-bar">
+        <button class="btn btn-secondary" onclick="window.print()">Imprimir / Exportar</button>
+        <div class="spacer"></div>
+        <div style="font-size:11px;color:var(--taupe-500)">Una vez revisado por Gerencia General, continuar en la Plantilla de Inversion</div>
+        <button class="btn btn-approve" onclick="activateApproval()">Marcar como Aprobado</button>
+        <button class="btn btn-danger" onclick="alert('Proyecto marcado como Rechazado')">Rechazar</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- VIEW 2: PLANTILLA DE INVERSION -->
+<!-- ================================================================ -->
+<div class="view" id="view-plantilla">
+
+  <div class="page-header">
+    <div class="page-header-eyebrow">Plantilla de Ejecucion — Uso Post-Aprobacion</div>
+    <h1>Registro Detallado de Inversion en Apertura</h1>
+    <p>Este documento se diligencia una vez obtenida la aprobacion de Gerencia General. Cada gasto debe registrarse con su soporte fotografico o documental, proveedor, factura y fecha de desembolso para garantizar la trazabilidad total de la inversion.</p>
+  </div>
+
+  <div class="content">
+
+    <!-- ESTADO Y RESUMEN -->
+    <div class="approval-status-bar">
+      <div class="status-info">
+        <div class="s-label">Estado del Proyecto</div>
+        <div class="s-val" id="approval-status-text">En espera de aprobacion</div>
+      </div>
+      <span class="badge badge-pending" id="approval-badge">Pendiente</span>
+    </div>
+
+    <div class="summary-box" id="summary-box">
+      <div class="summary-item">
+        <div class="s-label">PdV Objetivo</div>
+        <div class="s-value" style="font-size:16px">—</div>
+      </div>
+      <div class="summary-item">
+        <div class="s-label">Departamento</div>
+        <div class="s-value" style="font-size:16px">—</div>
+      </div>
+      <div class="summary-item">
+        <div class="s-label">Presupuesto aprobado</div>
+        <div class="s-value" id="summ-aprobado">$ 0</div>
+        <div class="s-sub">Segun formato de evaluacion</div>
+      </div>
+      <div class="summary-item">
+        <div class="s-label">Total ejecutado</div>
+        <div class="s-value" id="summ-ejecutado">$ 0</div>
+        <div class="s-sub">Suma de gastos registrados</div>
+      </div>
+    </div>
+
+    <!-- BLOQUE A: ARREGLOS LOCATIVOS -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number" style="background:var(--taupe-500)">A</div>
+        <div>
+          <div class="card-title">Arreglos Locativos y Adecuacion Fisica</div>
+          <div class="card-subtitle">Obra civil, instalaciones electricas, hidraulicas y acabados</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <table class="fin-table" id="tbl-arreglos">
+          <thead>
+            <tr>
+              <th>Descripcion del trabajo</th>
+              <th>Proveedor / Contratista</th>
+              <th>No. Factura</th>
+              <th>Fecha</th>
+              <th>Valor ($)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="text" placeholder="Ej. Pintura interior y exterior"></td>
+              <td><input type="text" placeholder="Nombre proveedor"></td>
+              <td><input type="text" placeholder="FV-000"></td>
+              <td><input type="date"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" placeholder="Ej. Instalacion electrica"></td>
+              <td><input type="text" placeholder="Nombre proveedor"></td>
+              <td><input type="text" placeholder="FV-000"></td>
+              <td><input type="date"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" placeholder=""></td>
+              <td><input type="text" placeholder=""></td>
+              <td><input type="text" placeholder=""></td>
+              <td><input type="date"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="4">Subtotal Arreglos Locativos</td>
+              <td id="sub-arreglos">$ 0</td>
+            </tr>
+          </tbody>
+        </table>
+        <hr class="divider">
+        <div class="section-label">Soporte Fotografico — Arreglos Locativos</div>
+        <div class="img-grid">
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Antes de obra</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Durante obra</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Resultado final</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Factura / Cotizacion</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOQUE B: IMAGEN -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number" style="background:var(--taupe-500)">B</div>
+        <div>
+          <div class="card-title">Imagen del Punto de Venta</div>
+          <div class="card-subtitle">Rotulacion, señaletica, branding, pintura corporativa y material POP</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <table class="fin-table">
+          <thead>
+            <tr>
+              <th>Elemento de imagen</th>
+              <th>Proveedor</th>
+              <th>No. Factura</th>
+              <th>Fecha</th>
+              <th>Valor ($)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="text" placeholder="Ej. Rotulo fachada iluminado"></td>
+              <td><input type="text" placeholder=""></td>
+              <td><input type="text" placeholder="FV-000"></td>
+              <td><input type="date"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" placeholder="Ej. Viniles interiores y stickers"></td>
+              <td><input type="text" placeholder=""></td>
+              <td><input type="text" placeholder="FV-000"></td>
+              <td><input type="date"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" placeholder="Ej. Dotacion uniformes equipo"></td>
+              <td><input type="text" placeholder=""></td>
+              <td><input type="text" placeholder="FV-000"></td>
+              <td><input type="date"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="4">Subtotal Imagen del PdV</td>
+              <td id="sub-imagen">$ 0</td>
+            </tr>
+          </tbody>
+        </table>
+        <hr class="divider">
+        <div class="section-label">Soporte Fotografico — Imagen PdV</div>
+        <div class="img-grid">
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Diseno aprobado</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Instalacion rotulo</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>PdV terminado</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Uniformes equipo</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOQUE C: NOMINA -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number" style="background:var(--taupe-500)">C</div>
+        <div>
+          <div class="card-title">Nomina — Primer Mes de Operacion</div>
+          <div class="card-subtitle">Salarios, prestaciones sociales y seguridad social del mes inicial</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <table class="fin-table">
+          <thead>
+            <tr>
+              <th>Cargo</th>
+              <th>Nombre del colaborador</th>
+              <th>Fecha de ingreso</th>
+              <th>Salario base ($)</th>
+              <th>Carga prestacional ($)</th>
+              <th>Total cargo ($)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="text" placeholder="Cargo"></td>
+              <td><input type="text" placeholder="Nombre completo"></td>
+              <td><input type="date"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+              <td><input type="number" class="amount-input" placeholder="0"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" placeholder="Cargo"></td>
+              <td><input type="text" placeholder="Nombre completo"></td>
+              <td><input type="date"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+              <td><input type="number" class="amount-input" placeholder="0"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" placeholder="Cargo"></td>
+              <td><input type="text" placeholder="Nombre completo"></td>
+              <td><input type="date"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+              <td><input type="number" class="amount-input" placeholder="0"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="5">Subtotal Nomina Primer Mes</td>
+              <td id="sub-nomina">$ 0</td>
+            </tr>
+          </tbody>
+        </table>
+        <hr class="divider">
+        <div class="section-label">Soporte Documental — Nomina</div>
+        <div class="img-grid">
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Desprendible nomina</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Contratos firmados</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Planilla SS</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Otro soporte</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOQUE D: INVENTARIO -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number" style="background:var(--taupe-500)">D</div>
+        <div>
+          <div class="card-title">Inventario Inicial</div>
+          <div class="card-subtitle">Productos, referencias y cantidades del stock de apertura</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <table class="fin-table">
+          <thead>
+            <tr>
+              <th>Categoria / Linea</th>
+              <th>Referencia / Descripcion</th>
+              <th>Cantidad</th>
+              <th>Costo unitario ($)</th>
+              <th>Total ($)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><select style="font-size:12px;border:none;background:transparent;outline:none;width:100%"><option>Repuestos</option><option>Accesorios</option><option>Lubricantes</option><option>Llantas</option><option>Equipos de proteccion</option><option>Otro</option></select></td>
+              <td><input type="text" placeholder="Referencia"></td>
+              <td><input type="number" placeholder="0" style="width:70px"></td>
+              <td><input type="number" class="amount-input" placeholder="0"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+            </tr>
+            <tr>
+              <td><select style="font-size:12px;border:none;background:transparent;outline:none;width:100%"><option>Repuestos</option><option>Accesorios</option><option>Lubricantes</option><option>Llantas</option><option>Equipos de proteccion</option><option>Otro</option></select></td>
+              <td><input type="text" placeholder="Referencia"></td>
+              <td><input type="number" placeholder="0" style="width:70px"></td>
+              <td><input type="number" class="amount-input" placeholder="0"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+            </tr>
+            <tr>
+              <td><select style="font-size:12px;border:none;background:transparent;outline:none;width:100%"><option>Repuestos</option><option>Accesorios</option><option>Lubricantes</option><option>Llantas</option><option>Equipos de proteccion</option><option>Otro</option></select></td>
+              <td><input type="text" placeholder="Referencia"></td>
+              <td><input type="number" placeholder="0" style="width:70px"></td>
+              <td><input type="number" class="amount-input" placeholder="0"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="4">Subtotal Inventario Inicial</td>
+              <td id="sub-inventario">$ 0</td>
+            </tr>
+          </tbody>
+        </table>
+        <hr class="divider">
+        <div class="section-label">Soporte Documental — Inventario</div>
+        <div class="img-grid">
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Orden de compra</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Factura proveedor</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Recepcion en bodega</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Producto exhibido</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOQUE E: OTROS GASTOS -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number" style="background:var(--taupe-500)">E</div>
+        <div>
+          <div class="card-title">Otros Gastos de Apertura</div>
+          <div class="card-subtitle">Mobiliario, tecnologia, deposito, marketing, tramites legales y gastos varios</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <table class="fin-table">
+          <thead>
+            <tr>
+              <th>Categoria</th>
+              <th>Descripcion del gasto</th>
+              <th>Proveedor</th>
+              <th>No. Factura</th>
+              <th>Fecha</th>
+              <th>Valor ($)</th>
+            </tr>
+          </thead>
+          <tbody id="otros-body">
+            <tr>
+              <td><select style="font-size:12px;border:none;background:transparent;outline:none"><option>Mobiliario</option><option>Tecnologia</option><option>Deposito arrendamiento</option><option>Marketing</option><option>Tramites legales</option><option>Seguridad</option><option>Servicios publicos</option><option>Contingencia</option><option>Otro</option></select></td>
+              <td><input type="text" placeholder="Descripcion"></td>
+              <td><input type="text" placeholder="Proveedor"></td>
+              <td><input type="text" placeholder="FV-000"></td>
+              <td><input type="date"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+            </tr>
+            <tr>
+              <td><select style="font-size:12px;border:none;background:transparent;outline:none"><option>Mobiliario</option><option>Tecnologia</option><option>Deposito arrendamiento</option><option>Marketing</option><option>Tramites legales</option><option>Seguridad</option><option>Servicios publicos</option><option>Contingencia</option><option>Otro</option></select></td>
+              <td><input type="text" placeholder="Descripcion"></td>
+              <td><input type="text" placeholder="Proveedor"></td>
+              <td><input type="text" placeholder="FV-000"></td>
+              <td><input type="date"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+            </tr>
+            <tr>
+              <td><select style="font-size:12px;border:none;background:transparent;outline:none"><option>Mobiliario</option><option>Tecnologia</option><option>Deposito arrendamiento</option><option>Marketing</option><option>Tramites legales</option><option>Seguridad</option><option>Servicios publicos</option><option>Contingencia</option><option>Otro</option></select></td>
+              <td><input type="text" placeholder="Descripcion"></td>
+              <td><input type="text" placeholder="Proveedor"></td>
+              <td><input type="text" placeholder="FV-000"></td>
+              <td><input type="date"></td>
+              <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="5">Subtotal Otros Gastos</td>
+              <td id="sub-otros">$ 0</td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="addOtroGasto()">+ Agregar fila</button>
+        <hr class="divider">
+        <div class="section-label">Soporte Fotografico — Otros Gastos</div>
+        <div class="img-grid" id="img-otros">
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Mobiliario entregado</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Equipos instalados</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Material marketing</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Documentos legales</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESUMEN TOTAL EJECUTADO -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title" style="margin-left:0;font-size:19px">Consolidado Total de la Inversion Ejecutada</div>
+      </div>
+      <div class="card-body">
+        <table class="fin-table">
+          <thead>
+            <tr><th>Bloque</th><th>Descripcion</th><th style="width:200px">Total ($)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>A</td><td>Arreglos Locativos y Adecuacion Fisica</td><td id="res-a">$ 0</td></tr>
+            <tr><td>B</td><td>Imagen del Punto de Venta</td><td id="res-b">$ 0</td></tr>
+            <tr><td>C</td><td>Nomina — Primer Mes</td><td id="res-c">$ 0</td></tr>
+            <tr><td>D</td><td>Inventario Inicial</td><td id="res-d">$ 0</td></tr>
+            <tr><td>E</td><td>Otros Gastos de Apertura</td><td id="res-e">$ 0</td></tr>
+            <tr class="grand-total">
+              <td colspan="2">TOTAL GENERAL INVERTIDO EN APERTURA</td>
+              <td id="gran-total">$ 0</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="form-grid-3" style="margin-top:24px">
+          <div class="field">
+            <label>Presupuesto aprobado ($)</label>
+            <input type="number" id="presupuesto-aprobado" placeholder="0" oninput="calcDesviacion()">
+          </div>
+          <div class="field">
+            <label>Total ejecutado ($)</label>
+            <input type="number" id="total-ejecutado-display" placeholder="0" readonly style="background:var(--taupe-100);font-weight:600">
+          </div>
+          <div class="field">
+            <label>Desviacion ($)</label>
+            <input type="text" id="desviacion-display" placeholder="—" readonly style="background:var(--taupe-100);font-weight:600">
+          </div>
+        </div>
+
+        <hr class="divider">
+        <div class="section-label">Fotografia del PdV en Operacion — Inauguracion</div>
+        <div class="img-grid">
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>PdV inaugurado — fachada</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Interior en operacion</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Equipo de trabajo</span></div>
+          <div class="img-slot" onclick="triggerImg(this)"><input type="file" accept="image/*" onchange="loadImg(event,this)"><span class="upload-icon">+</span><span>Dia de apertura</span></div>
+        </div>
+
+        <hr class="divider">
+        <div class="form-grid" style="margin-top:4px">
+          <div class="field">
+            <label>Fecha de apertura oficial</label>
+            <input type="date">
+          </div>
+          <div class="field">
+            <label>Responsable de la ejecucion</label>
+            <input type="text" placeholder="Nombre y cargo">
+          </div>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label>Observaciones de cierre y lecciones aprendidas</label>
+          <textarea style="min-height:90px" placeholder="Registro de incidencias durante la apertura, proveedores con bajo desempeno, ajustes al proceso para futuras aperturas, etc."></textarea>
+        </div>
+      </div>
+      <div class="action-bar">
+        <button class="btn btn-secondary" onclick="window.print()">Imprimir / Exportar</button>
+        <div class="spacer"></div>
+        <button class="btn btn-primary">Cerrar y Archivar Apertura</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // --- NAVIGATION ---
+  function switchView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('view-' + id).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  function switchInner(e, id) {
+    const parent = e.target.closest('.card-body');
+    parent.querySelectorAll('.inner-tab').forEach(t => t.classList.remove('active'));
+    parent.querySelectorAll('.inner-pane').forEach(p => p.classList.remove('active'));
+    e.target.classList.add('active');
+    document.getElementById(id).classList.add('active');
+  }
+
+  // --- IMAGE UPLOAD ---
+  function triggerImg(slot) {
+    slot.querySelector('input[type="file"]').click();
+  }
+  function loadImg(event, slot) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      let img = slot.querySelector('img');
+      if (!img) { img = document.createElement('img'); slot.appendChild(img); }
+      img.src = e.target.result;
+      slot.querySelector('.upload-icon') && (slot.querySelector('.upload-icon').style.display = 'none');
+      slot.querySelectorAll('span:not(.img-label)').forEach(s => { if (s.className !== 'img-label') s.style.display='none'; });
+      let rmv = slot.querySelector('.remove-img');
+      if (!rmv) {
+        rmv = document.createElement('button');
+        rmv.className = 'remove-img'; rmv.textContent = '×';
+        rmv.onclick = ev => { ev.stopPropagation(); removeImg(slot); };
+        slot.appendChild(rmv);
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+  function removeImg(slot) {
+    const img = slot.querySelector('img');
+    if (img) img.remove();
+    slot.querySelectorAll('span').forEach(s => s.style.display='');
+    slot.querySelector('input[type="file"]').value = '';
+  }
+
+  // --- CALCULATIONS: EVALUACION ---
+  function calcInversion() {
+    const inputs = document.querySelectorAll('#view-evaluacion .amount-input');
+    let total = 0;
+    inputs.forEach(i => { total += parseFloat(i.value) || 0; });
+    document.getElementById('total-inversion').textContent = '$ ' + total.toLocaleString('es-CO');
+  }
+
+  function calcProy(type) {
+    const pane = document.getElementById('proy-' + (type === 'c' ? 'conservadora' : 'optimista'));
+    const inputs = pane.querySelectorAll('input[type="number"]');
+    let total = 0;
+    inputs.forEach(i => { total += parseFloat(i.value) || 0; });
+    document.getElementById('proy-' + type + '-total').textContent = '$ ' + total.toLocaleString('es-CO');
+  }
+
+  // --- CALCULATIONS: PLANTILLA ---
+  function calcEjecutado() {
+    const getSum = (selector) => {
+      let s = 0;
+      document.querySelectorAll(selector).forEach(i => { s += parseFloat(i.value) || 0; });
+      return s;
+    };
+
+    // We calculate per-section sums by row position logic
+    // Using table IDs:
+    const allVals = document.querySelectorAll('#view-plantilla .exec-val');
+    let grand = 0;
+    allVals.forEach(i => grand += parseFloat(i.value) || 0);
+
+    // Per-block sums (rough by proximity)
+    const blocks = ['tbl-arreglos'];
+    const fmt = n => '$ ' + n.toLocaleString('es-CO');
+
+    // Update grand total
+    document.getElementById('gran-total').textContent = fmt(grand);
+    document.getElementById('summ-ejecutado').textContent = fmt(grand);
+    document.getElementById('total-ejecutado-display').value = grand;
+    calcDesviacion();
+  }
+
+  function calcDesviacion() {
+    const apr = parseFloat(document.getElementById('presupuesto-aprobado').value) || 0;
+    const exe = parseFloat(document.getElementById('total-ejecutado-display').value) || 0;
+    const diff = exe - apr;
+    const el = document.getElementById('desviacion-display');
+    if (apr === 0) { el.value = '—'; el.style.color = ''; return; }
+    el.value = (diff >= 0 ? '+' : '') + '$ ' + diff.toLocaleString('es-CO');
+    el.style.color = diff > 0 ? '#8B3A3A' : '#3A6B4A';
+  }
+
+  // --- APPROVAL ---
+  function activateApproval() {
+    document.getElementById('approval-status-text').textContent = 'Aprobado por Gerencia General';
+    const badge = document.getElementById('approval-badge');
+    badge.textContent = 'Aprobado';
+    badge.className = 'badge badge-approved';
+    alert('Proyecto marcado como APROBADO. Puede proceder a completar la Plantilla de Inversion.');
+  }
+
+  // --- ADD ROW ---
+  function addOtroGasto() {
+    const tbody = document.getElementById('otros-body');
+    const lastRow = tbody.querySelector('.total-row');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><select style="font-size:12px;border:none;background:transparent;outline:none"><option>Mobiliario</option><option>Tecnologia</option><option>Deposito arrendamiento</option><option>Marketing</option><option>Tramites legales</option><option>Seguridad</option><option>Servicios publicos</option><option>Contingencia</option><option>Otro</option></select></td>
+      <td><input type="text" placeholder="Descripcion"></td>
+      <td><input type="text" placeholder="Proveedor"></td>
+      <td><input type="text" placeholder="FV-000"></td>
+      <td><input type="date"></td>
+      <td><input type="number" class="amount-input exec-val" placeholder="0" oninput="calcEjecutado()"></td>`;
+    tbody.insertBefore(tr, lastRow);
+  }
+</script>
+</body>
+</html>
